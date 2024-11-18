@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">appProjeto</string>
+    <string name="addEcoponto">Adicionar ecoponto</string>
+    <string name="addTrilha">Adicionar trilha</string>
+    <string name="centrarUser">Estás aqui</string>
 </resources>
