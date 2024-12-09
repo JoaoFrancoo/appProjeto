@@ -121,7 +121,7 @@ class RegisterActivity : AppCompatActivity() {
             .document(uid)
             .set(user)
             .addOnSuccessListener {
-                Log.d(TAG, "Usuário salvo no Firestore.")
+                Log.d(TAG, "Utilizador salvo no Firestore.")
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Erro ao salvar usuário no Firestore", e)
