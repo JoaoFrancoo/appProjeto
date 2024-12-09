@@ -1,43 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@drawable/loginBackground"
+    android:padding="16dp"
+    tools:context=".RegisterActivity">
 
-    <EditText
-        android:id="@+id/nameEditText"
+    <!-- Sombra escura sobre a imagem de fundo -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Nome"
-        android:inputType="textPersonName" />
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:alpha="0.6" />
 
-    <EditText
-        android:id="@+id/emailEditText"
+    <!-- Conteúdo Principal -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
 
-    <EditText
-        android:id="@+id/passwordEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Senha"
-        android:inputType="textPassword" />
+        <!-- Logo do Registro -->
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="128dp"
+            android:layout_height="148dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/LogoGrande"
+            android:background="@drawable/circle_with_shadow"
+            android:padding="20dp"
+            android:contentDescription="Logo do Registro"
+            android:scaleType="centerCrop" />
 
-    <EditText
-        android:id="@+id/birthDateEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Data de Nascimento (dd/mm/aaaa)"
-        android:inputType="date" />
+        <!-- Título -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="24dp"
+            android:text="Registrar"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/registerButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Registrar" />
+        <!-- Campo Nome -->
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Nome"
+            android:inputType="textPersonName"
+            android:padding="12dp"
+            android:background="#80000000"
+            android:alpha="2"
+            android:textColor="@android:color/white"
+            android:textColorHint="#CCCCCC" />
 
-</LinearLayout>
+        <!-- Campo Email -->
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:padding="12dp"
+            android:background="#80000000"
+            android:alpha="2"
+            android:textColor="@android:color/white"
+            android:textColorHint="#CCCCCC" />
+
+        <!-- Campo Senha -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Senha"
+            android:inputType="textPassword"
+            android:padding="12dp"
+            android:background="#80000000"
+            android:alpha="2"
+            android:textColor="@android:color/white"
+            android:textColorHint="#CCCCCC" />
+
+        <!-- Campo Data de Nascimento -->
+        <EditText
+            android:id="@+id/etBirthDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:hint="Data de Nascimento (dd/mm/aaaa)"
+            android:inputType="date"
+            android:padding="12dp"
+            android:background="#80000000"
+            android:alpha="2"
+            android:textColor="@android:color/white"
+            android:textColorHint="#CCCCCC" />
+
+        <!-- Botão de Registrar -->
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#fbdb5b"
+            android:text="Registrar"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+
+        <!-- Botão de Voltar ao Login -->
+        <Button
+            android:id="@+id/btnBackToLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#413806"
+            android:text="Voltar ao Login"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
