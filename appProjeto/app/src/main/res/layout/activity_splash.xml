@@ -14,7 +14,7 @@
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:contentDescription="@string/app_name"
-        android:src="@drawable/LogoNormal1"
+        android:src="@drawable/logonormal1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

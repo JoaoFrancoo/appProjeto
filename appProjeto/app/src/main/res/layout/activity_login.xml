@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/loginBackground"
+    android:background="@drawable/loginbackground"
     android:padding="16dp"
     tools:context=".LoginActivity">
 
@@ -32,7 +32,7 @@ android:padding="24dp">
         android:layout_height="148dp"
         android:layout_gravity="center"
         android:layout_marginBottom="16dp"
-        android:src="@drawable/LogoGrande"
+        android:src="@drawable/logogrande"
         android:background="@drawable/circle_with_shadow"
         android:padding="20dp"
         android:contentDescription="Logo do Login"
