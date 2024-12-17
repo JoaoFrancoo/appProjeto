@@ -2,13 +2,13 @@
     <item>
         <shape>
             <solid android:color="#413806" />
-            <corners android:radius="150dp" />
+            <corners android:radius="20dp" />
         </shape>
     </item>
-    <item android:top="4dp" android:left="10dp">
+    <item android:top="10dp" android:left="10dp" android:bottom="10dp" android:right="10dp">
         <shape>
             <solid android:color="#FBDB5B" />
-            <corners android:radius="100dp" />
+            <corners android:radius="20dp" />
         </shape>
     </item>
 </layer-list>

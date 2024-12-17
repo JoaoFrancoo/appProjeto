@@ -6,8 +6,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/loginbackground"
-    android:padding="16dp"
+    android:background="@drawable/loginBackground"
+    android:padding="8dp"
     tools:context=".RegisterActivity">
 
     <!-- Sombra escura sobre a imagem de fundo -->
@@ -23,18 +23,18 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <!-- Logo do Registro -->
         <ImageView
             android:id="@+id/ivLogo"
-            android:layout_width="128dp"
-            android:layout_height="148dp"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
             android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/logogrande"
+            android:layout_marginBottom="12dp"
+            android:src="@drawable/LogoGrande"
             android:background="@drawable/circle_with_shadow"
-            android:padding="20dp"
+            android:padding="16dp"
             android:contentDescription="Logo do Registro"
             android:scaleType="centerCrop" />
 
@@ -44,23 +44,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="16dp"
             android:text="Registrar"
             android:textColor="@android:color/white"
-            android:textSize="32sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <!-- Campo Nome -->
         <EditText
             android:id="@+id/etName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
             android:hint="Nome"
             android:inputType="textPersonName"
-            android:padding="12dp"
+            android:padding="8dp"
             android:background="#80000000"
-            android:alpha="2"
             android:textColor="@android:color/white"
             android:textColorHint="#CCCCCC" />
 
@@ -68,13 +67,12 @@
         <EditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
             android:hint="Email"
             android:inputType="textEmailAddress"
-            android:padding="12dp"
+            android:padding="8dp"
             android:background="#80000000"
-            android:alpha="2"
             android:textColor="@android:color/white"
             android:textColorHint="#CCCCCC" />
 
@@ -82,46 +80,62 @@
         <EditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
             android:hint="Senha"
             android:inputType="textPassword"
-            android:padding="12dp"
+            android:padding="8dp"
             android:background="#80000000"
-            android:alpha="2"
             android:textColor="@android:color/white"
             android:textColorHint="#CCCCCC" />
+
+        <!-- Foto de perfil -->
+        <ImageView
+            android:id="@+id/profileImageView"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="Foto de perfil"
+            android:src="@drawable/profile_foto"
+            android:scaleType="centerCrop" />
+
+        <!-- Botão Selecionar Foto -->
+        <Button
+            android:id="@+id/btnSelectPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Adicionar Foto" />
 
         <!-- Campo Data de Nascimento -->
         <EditText
             android:id="@+id/etBirthDate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
             android:hint="Data de Nascimento (dd/mm/aaaa)"
             android:inputType="date"
-            android:padding="12dp"
+            android:padding="8dp"
             android:background="#80000000"
-            android:alpha="2"
             android:textColor="@android:color/white"
             android:textColorHint="#CCCCCC" />
 
-        <!-- Botão de Registrar -->
+        <!-- Botão Registrar -->
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
             android:backgroundTint="#fbdb5b"
             android:text="Registrar"
             android:textColor="@android:color/white"
             android:textStyle="bold" />
 
-        <!-- Botão de Voltar ao Login -->
+        <!-- Botão Voltar ao Login -->
         <Button
             android:id="@+id/btnBackToLogin"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:backgroundTint="#413806"
             android:text="Voltar ao Login"
             android:textColor="@android:color/white"
