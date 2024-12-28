@@ -106,7 +106,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Por favor, adicione o ponto de partida e o destino.", Toast.LENGTH_SHORT).show()
             return
         }
-
         val startCoord = "${start.longitude},${start.latitude}"
         val endCoord = "${end.longitude},${end.latitude}"
 
