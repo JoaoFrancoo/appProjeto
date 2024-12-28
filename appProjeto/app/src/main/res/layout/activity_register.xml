@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/loginBackground"
+    android:background="@drawable/loginbackground"
     android:padding="8dp"
     tools:context=".RegisterActivity">
 
@@ -32,7 +32,7 @@
             android:layout_height="96dp"
             android:layout_gravity="center"
             android:layout_marginBottom="12dp"
-            android:src="@drawable/LogoGrande"
+            android:src="@drawable/logogrande"
             android:background="@drawable/circle_with_shadow"
             android:padding="16dp"
             android:contentDescription="Logo do Registro"
@@ -82,7 +82,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="12dp"
-            android:hint="Senha"
+            android:hint="Palavra-Passe"
             android:inputType="textPassword"
             android:padding="8dp"
             android:background="#80000000"

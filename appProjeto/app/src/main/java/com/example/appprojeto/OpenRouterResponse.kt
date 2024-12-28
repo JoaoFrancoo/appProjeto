@@ -1,15 +1,32 @@
-package com.example.appprojeto
-
 data class ORSRouteResponse(
-    val routes: List<Route>
+    val features: List<Feature>
 )
 
-data class Route(
-    val summary: Summary,
-    val geometry: String // A geometria da rota (codificada)
+data class Feature(
+    val geometry: Geometry,
+    val properties: Properties
 )
 
-data class Summary(
-    val distance: Double, // Distância total da rota (em metros)
-    val duration: Double  // Tempo estimado para percorrer a rota (em segundos)
+data class Geometry(
+    val type: String,
+    val coordinates: List<List<Double>>
+)
+
+data class Properties(
+    val segments: List<Segment>
+)
+
+data class Segment(
+    val distance: Double,
+    val duration: Double,
+    val steps: List<Step>
+)
+
+data class Step(
+    val distance: Double,
+    val duration: Double,
+    val type: Int,
+    val instruction: String,
+    val name: String,
+    val way_points: List<Int>
 )
