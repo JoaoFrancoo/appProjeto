@@ -1,4 +1,3 @@
-
 package com.example.appprojeto
 
 import ORSRouteResponse
@@ -49,7 +48,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Inicializar Retrofit para chamada à API
+        Log.d("MainActivity", "Initializing MainActivity")
+
+        // Initialize Retrofit for API calls
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             .build()
         orsService = retrofit.create(OpenRouteService::class.java)
 
-        // Configurar a interface do mapa
+        // Map setup
         Configuration.getInstance()
             .load(applicationContext, applicationContext.getSharedPreferences("osm_prefs", MODE_PRIVATE))
         Configuration.getInstance().userAgentValue = packageName
@@ -72,12 +73,11 @@ class MainActivity : AppCompatActivity() {
         map.setMultiTouchControls(true)
         map.setBuiltInZoomControls(true)
 
-        // Inicializar DrawerLayout e NavigationView
+        // Drawer setup
         drawerLayout = findViewById(R.id.drawer_layout)
         navView = findViewById(R.id.nav_view)
         menuButton = findViewById(R.id.menu_button)
 
-        // Configurar o botão de menu para abrir o Navigation Drawer
         menuButton.setOnClickListener {
             drawerLayout.openDrawer(navView)
         }
@@ -85,11 +85,10 @@ class MainActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home -> {
-
+                    Log.d("MainActivity", "Home selected")
                     true
                 }
                 R.id.nav_routes -> {
-
                     val intent = Intent(this, RoutesActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
@@ -97,19 +96,18 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_settings -> {
-
+                    Log.d("MainActivity", "Settings selected")
                     true
                 }
                 else -> false
             }
         }
-        // Configurar FloatingActionButton
+
         val fabCenterUser: FloatingActionButton = findViewById(R.id.fab_center_user)
         fabCenterUser.setOnClickListener { setupUserLocation() }
 
         setupUserLocation()
 
-        // Captura de toques no mapa
         map.overlays.add(object : org.osmdroid.views.overlay.Overlay() {
             override fun onSingleTapConfirmed(e: android.view.MotionEvent, mapView: MapView): Boolean {
                 val projection = mapView.projection
@@ -121,7 +119,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentUserUid(): String? {
-        return firebaseAuth.currentUser?.uid
+        val uid = firebaseAuth.currentUser?.uid
+        Log.d("MainActivity", "Current User UID: $uid")
+        return uid
     }
 
     private fun handleMapTap(location: GeoPoint) {
@@ -129,10 +129,12 @@ class MainActivity : AppCompatActivity() {
             startPoint = location
             addMarker(location, "Ponto de Partida")
             Toast.makeText(this, "Ponto de Partida Adicionado!", Toast.LENGTH_SHORT).show()
+            Log.d("MainActivity", "Start Point Set: $location")
         } else if (endPoint == null) {
             endPoint = location
             addMarker(location, "Destino")
             Toast.makeText(this, "Destino Adicionado! Calculando Rota...", Toast.LENGTH_SHORT).show()
+            Log.d("MainActivity", "End Point Set: $location")
             calculateRoute()
         } else {
             Toast.makeText(this, "Rota já foi calculada. Reinicie para testar novamente.", Toast.LENGTH_SHORT).show()
@@ -146,139 +148,65 @@ class MainActivity : AppCompatActivity() {
         marker.title = title
         map.overlays.add(marker)
         map.invalidate()
+        Log.d("MainActivity", "Marker Added at: $location with title: $title")
     }
 
     private fun calculateRoute() {
-        val start = startPoint
-        val end = endPoint
-
-        if (start == null || end == null) {
+        if (startPoint == null || endPoint == null) {
             Toast.makeText(this, "Por favor, adicione o ponto de partida e o destino.", Toast.LENGTH_SHORT).show()
+            Log.e("MainActivity", "Cannot calculate route, start or end point is null")
             return
         }
-        val startCoord = "${start.longitude},${start.latitude}"
-        val endCoord = "${end.longitude},${end.latitude}"
 
-        Log.d("MainActivity", "Coordenadas Enviadas: Start: $startCoord, End: $endCoord")
+        val startCoord = "${startPoint!!.longitude},${startPoint!!.latitude}"
+        val endCoord = "${endPoint!!.longitude},${endPoint!!.latitude}"
+        Log.d("MainActivity", "Calculating Route: Start - $startCoord, End - $endCoord")
 
         val call = orsService.getRoute(startCoord, endCoord, orsApiKey)
         call.enqueue(object : Callback<ORSRouteResponse> {
             override fun onResponse(call: Call<ORSRouteResponse>, response: Response<ORSRouteResponse>) {
                 if (response.isSuccessful) {
                     val body = response.body()
-                    Log.d("MainActivity", "Resposta da API: ${body.toString()}")
+                    Log.d("MainActivity", "API Response: $body")
 
-                    if (body != null && body.features != null && body.features.isNotEmpty()) {
-                        val feature = body.features.firstOrNull()
-                        if (feature != null && feature.properties != null && feature.properties.segments != null && feature.properties.segments.isNotEmpty()) {
-                            val segment = feature.properties.segments.firstOrNull()
-                            if (segment != null) {
-                                val distance = segment.distance / 1000.0 // km
-                                val duration = segment.duration / 3600.0 // horas
-
-                                // Decodifica as coordenadas da geometria
-                                val routePoints = feature.geometry.coordinates.map { coord ->
-                                    GeoPoint(coord[1], coord[0])
-                                }
-                                drawRoute(routePoints)
-
-                                // Adicionar marcadores de instrução
-                                for (step in segment.steps) {
-                                    val point = routePoints[step.way_points.last()]
-                                    addMarker(point, step.instruction)
-                                }
-
-                                showRouteInfoDialog(distance, duration)
-                                showSaveRouteConfirmationDialog(routePoints, distance, duration) // Exibir confirmação
-                            } else {
-                                Log.e("MainActivity", "Erro: Nenhum segmento encontrado.")
-                                Toast.makeText(this@MainActivity, "Nenhum segmento encontrado.", Toast.LENGTH_SHORT).show()
+                    if (body != null) {
+                        val features = body.features.firstOrNull()
+                        if (features != null) {
+                            val routePoints = features.geometry.coordinates.map { coord ->
+                                GeoPoint(coord[1], coord[0])
                             }
+                            drawRoute(routePoints)
                         } else {
-                            Log.e("MainActivity", "Erro: Nenhuma feature ou segmento encontrado.")
-                            Toast.makeText(this@MainActivity, "Nenhuma feature ou segmento encontrado.", Toast.LENGTH_SHORT).show()
+                            Log.e("MainActivity", "No features found in API response")
                         }
-                    } else {
-                        Log.e("MainActivity", "Erro: Resposta da API vazia ou sem rotas. ${response.raw()}")
-                        Toast.makeText(this@MainActivity, "Erro: Resposta da API vazia ou sem rotas.", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string() ?: "Erro desconhecido"
-                    Log.e("API_ERROR", "Código: ${response.code()}, Mensagem: ${response.message()}, Corpo: $errorBody")
-                    Toast.makeText(this@MainActivity, "Erro da API: Código ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Log.e("MainActivity", "API Error: ${response.message()}")
                 }
             }
 
             override fun onFailure(call: Call<ORSRouteResponse>, t: Throwable) {
-                Log.e("MainActivity", "Erro ao calcular rota: ${t.message}")
-                Toast.makeText(this@MainActivity, "Erro ao calcular rota: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.e("MainActivity", "API Failure: ${t.message}")
             }
         })
     }
 
     private fun drawRoute(routePoints: List<GeoPoint>) {
-        if (routePoints.isNotEmpty()) {
-            val polyline = Polyline()
-            polyline.setPoints(routePoints)
-            polyline.title = "Rota Calculada"
-            map.overlays.add(polyline)
-            map.invalidate()
-        } else {
-            Log.e("MainActivity", "Nenhum ponto de rota para desenhar.")
+        if (routePoints.isEmpty()) {
+            Log.e("MainActivity", "No points to draw")
+            return
         }
-    }
-
-    private fun saveRouteToFirestore(routePoints: List<GeoPoint>, distance: Double, duration: Double) {
-        val uid = getCurrentUserUid() ?: return
-
-        val routeData = hashMapOf(
-            "uid" to uid,
-            "points" to routePoints.map { mapOf("latitude" to it.latitude, "longitude" to it.longitude) },
-            "distance" to distance,
-            "duration" to duration
-        )
-
-        firestore.collection("routes")
-            .add(routeData)
-            .addOnSuccessListener { documentReference ->
-                Log.d("MainActivity", "Rota salva com ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.e("MainActivity", "Erro ao salvar a rota", e)
-            }
-    }
-
-    private fun showRouteInfoDialog(distance: Double, duration: Double) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Informações da Rota")
-        builder.setMessage("Distância: %.2f km\nTempo estimado: %.1f horas".format(distance, duration))
-        builder.setPositiveButton("OK") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        val dialog: AlertDialog = builder.create()
-        dialog.show()
-    }
-
-    private fun showSaveRouteConfirmationDialog(routePoints: List<GeoPoint>, distance: Double, duration: Double) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Salvar Rota")
-        builder.setMessage("Deseja salvar esta rota?\n\nDistância: %.2f km\nTempo estimado: %.1f horas".format(distance, duration))
-        builder.setPositiveButton("Sim") { dialog, _ ->
-            saveRouteToFirestore(routePoints, distance, duration)
-            dialog.dismiss()
-        }
-        builder.setNegativeButton("Não") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        val dialog: AlertDialog = builder.create()
-        dialog.show()
+        val polyline = Polyline()
+        polyline.setPoints(routePoints)
+        map.overlays.add(polyline)
+        map.invalidate()
+        Log.d("MainActivity", "Route Drawn: ${routePoints.size} points")
     }
 
     private fun setupUserLocation() {
+        Log.d("MainActivity", "Setting up user location")
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            val defaultLocation = GeoPoint(38.7169, -9.1399) // Lisboa
+            val defaultLocation = GeoPoint(38.7169, -9.1399)
             centerMapOnLocation(defaultLocation)
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
@@ -289,29 +217,22 @@ class MainActivity : AppCompatActivity() {
         map.controller.setZoom(15.0)
         map.controller.animateTo(location)
         map.invalidate()
+        Log.d("MainActivity", "Map centered on location: $location")
     }
 
-    private fun loadRoutesFromFirestore() {
-        val uid = getCurrentUserUid() ?: return
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_LOAD_ROUTES && resultCode == RESULT_OK) {
+            val points = data?.getSerializableExtra("points") as? ArrayList<GeoPoint>
+            val distance = data?.getDoubleExtra("distance", 0.0)
+            val duration = data?.getDoubleExtra("duration", 0.0)
 
-        firestore.collection("routes")
-            .whereEqualTo("uid", uid)
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    val points = document.data["points"] as List<Map<String, Double>>
-                    val distance = document.data["distance"] as Double
-                    val duration = document.data["duration"] as Double
-
-                    val routePoints = points.map { GeoPoint(it["latitude"]!!, it["longitude"]!!) }
-                    drawRoute(routePoints)
-
-                    // Exibir informações da rota ou adicionar lógica adicional
-                    showRouteInfoDialog(distance, duration)
-                }
+            if (points != null) {
+                drawRoute(points)
+                Toast.makeText(this, "Rota carregada com $distance km em $duration minutos.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Nenhuma rota encontrada.", Toast.LENGTH_SHORT).show()
             }
-            .addOnFailureListener { e ->
-                Log.e("MainActivity", "Erro ao carregar rotas", e)
-            }
+        }
     }
 }
