@@ -23,35 +23,44 @@
             android:src="@drawable/gps_pointer"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:backgroundTint="@color/white" />
+            android:backgroundTint="@color/white"
+             />
 
-        <Button
-            android:id="@+id/btn_add_ecopoint"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_ecopoint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:text="Adicionar Ecoponto"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true" />
+            android:contentDescription="Adicionar Ecoponto"
+            android:src="@drawable/ic_ecoponto"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:backgroundTint="@color/white"
+             />
 
-        <Button
-            android:id="@+id/btn_add_trail"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_trail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:text="Adicionar Trilha"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true" />
+            android:contentDescription="Adicionar Trilha"
+            android:src="@drawable/ic_trail"
+            android:layout_above="@id/fab_add_ecopoint"
+            android:layout_alignParentStart="true"
+            android:backgroundTint="@color/white"
+           />
 
-        <ImageButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/menu_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Menu"
+            android:src="@drawable/menu"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_margin="16dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_launcher_background" />
+            android:backgroundTint="@color/white"
+           />
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView

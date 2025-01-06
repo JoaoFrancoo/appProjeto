@@ -18,6 +18,9 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // Verificar token de login
+        checkLoginStatus()
+
         auth = FirebaseAuth.getInstance()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -46,12 +49,20 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun signInWithEmailAndPassword(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d(TAG, "signInWithEmailAndPassword: Success")
                 Toast.makeText(baseContext, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
 
+                // Armazenar o token (timestamp do login)
+                val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putLong("lastLogin", System.currentTimeMillis()) // Guardar timestamp atual
+                editor.apply()
+
+                // Redirecionar para a MainActivity
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
                 finish()
@@ -59,6 +70,20 @@ class LoginActivity : AppCompatActivity() {
                 Log.w(TAG, "signInWithEmailAndPassword: Failure", task.exception)
                 Toast.makeText(baseContext, "Falha na autenticação.", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun checkLoginStatus() {
+        val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
+        val lastLogin = sharedPreferences.getLong("lastLogin", 0) // Pega o timestamp do último login
+        val currentTime = System.currentTimeMillis()
+        val oneDayInMillis = 24 * 60 * 60 * 1000 // 1 dia em milissegundos
+
+        if (lastLogin != 0L && (currentTime - lastLogin) < oneDayInMillis) {
+            // Se o último login foi há menos de 1 dia, redirecionar para MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
