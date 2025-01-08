@@ -170,11 +170,16 @@ class MainActivity : AppCompatActivity() {
         // Desconectar do Firebase
         firebaseAuth.signOut()
 
+        // Logando o logout
+        Log.d("Logout", "Usuário deslogado do Firebase")
+
         // Redirecionar para a tela de login
         val intent = Intent(this, LoginActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)  // Limpa a pilha de atividades
         startActivity(intent)
-        finish()  // Finaliza a activity atual para que o usuário não possa voltar com o botão de voltar
+        finish()  // Finaliza a MainActivity para que o usuário não possa voltar
     }
+
 
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
