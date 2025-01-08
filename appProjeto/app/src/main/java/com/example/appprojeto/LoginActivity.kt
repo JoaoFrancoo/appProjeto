@@ -18,9 +18,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Verificar token de login
-        checkLoginStatus()
-
         auth = FirebaseAuth.getInstance()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -70,19 +67,6 @@ class LoginActivity : AppCompatActivity() {
                 Log.w(TAG, "signInWithEmailAndPassword: Failure", task.exception)
                 Toast.makeText(baseContext, "Falha na autenticação.", Toast.LENGTH_SHORT).show()
             }
-        }
-    }
-
-    private fun checkLoginStatus() {
-        val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
-        val lastLogin = sharedPreferences.getLong("lastLogin", 0)
-        val currentTime = System.currentTimeMillis()
-        val oneDayInMillis = 24 * 60 * 60 * 1000
-
-        if (lastLogin != 0L && (currentTime - lastLogin) < oneDayInMillis) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
         }
     }
 
