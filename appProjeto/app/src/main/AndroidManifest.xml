@@ -31,9 +31,6 @@
             android:name=".LeaderboardActivity"
             android:exported="false" />
         <activity
-            android:name=".classes.LeaderboardActivity"
-            android:exported="false" />
-        <activity
             android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>

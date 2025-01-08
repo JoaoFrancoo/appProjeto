@@ -1,6 +1,5 @@
 package com.example.appprojeto
 
-import LeaderboardActivity
 import ORSRouteResponse
 import android.content.Intent
 import android.content.pm.PackageManager
