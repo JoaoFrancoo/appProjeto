@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="24dp"
+    android:background="#F5F5F5">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,75 +16,95 @@
             android:id="@+id/profileImage"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="24dp"
             android:scaleType="centerCrop"
             android:src="@drawable/profile_foto"
-            android:contentDescription="Profile Image" />
+            android:contentDescription="Profile Image"
+            android:layout_gravity="center"
+            android:background="@drawable/circular_border"
+            android:elevation="4dp"/>
 
         <!-- Change Profile Image Button -->
         <Button
             android:id="@+id/changeProfileImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Change Profile Image" />
+            android:layout_marginBottom="24dp"
+            android:text="Alterar Imagem de Perfil"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF5722"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:layout_gravity="center"
+            android:textSize="16sp" />
 
         <!-- User Name -->
         <TextView
             android:id="@+id/userName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User Name"
-            android:textSize="20sp"
-            android:layout_marginBottom="8dp" />
+            android:text="Nome do Usuário"
+            android:textSize="22sp"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-medium" />
 
         <!-- User Email -->
         <TextView
             android:id="@+id/userEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="user@example.com"
+            android:text="usuario@exemplo.com"
             android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
+            android:textColor="#777777"
+            android:layout_marginBottom="24dp"
+            android:layout_gravity="center" />
 
         <!-- User Stats -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="24dp"
+            android:gravity="center_horizontal">
 
             <TextView
                 android:id="@+id/userRoutes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Routes: 0"
-                android:padding="20dp"
-                android:layout_marginRight="170dp"
-                android:textSize="16sp" />
+                android:text="Rotas: 0"
+                android:textSize="16sp"
+                android:textColor="#333333"
+                android:padding="16dp"
+                android:background="@drawable/stat_background"
+                android:layout_marginEnd="32dp"
+                android:layout_gravity="center" />
 
             <TextView
                 android:id="@+id/userEcopoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ecopoints: 0"
-                android:textSize="16sp" />
+                android:text="Ecopontos: 0"
+                android:textSize="16sp"
+                android:textColor="#333333"
+                android:padding="16dp"
+                android:background="@drawable/stat_background"
+                android:layout_gravity="center" />
         </LinearLayout>
-
-        <!-- Password Section -->
-        <Button
-            android:id="@+id/showPassword"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="View Password" />
 
         <Button
             android:id="@+id/goToChangePassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Change Password" />
+            android:text="Alterar Senha"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF5722"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:textSize="16sp"
+            android:layout_gravity="center"/>
+
 
     </LinearLayout>
 

@@ -25,7 +25,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import android.Manifest
 import android.app.Activity
-import com.example.app.ProfileActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
