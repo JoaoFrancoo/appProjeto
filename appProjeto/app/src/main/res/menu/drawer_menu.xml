@@ -12,6 +12,9 @@
         android:id="@+id/nav_leaderboard"
         android:title="Leaderboard | + KM" />
     <item
+        android:id="@+id/meu_perfil"
+        android:title="Meu Perfil" />
+    <item
         android:id="@+id/nav_logout"
         android:title="Logout" />
 </menu>

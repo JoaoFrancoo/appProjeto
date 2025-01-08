@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Profile Image -->
+        <ImageView
+            android:id="@+id/profileImage"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/profile_foto"
+            android:contentDescription="Profile Image" />
+
+        <!-- Change Profile Image Button -->
+        <Button
+            android:id="@+id/changeProfileImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Change Profile Image" />
+
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/userName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User Name"
+            android:textSize="20sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- User Email -->
+        <TextView
+            android:id="@+id/userEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="user@example.com"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- User Stats -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/userRoutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Routes: 0"
+                android:padding="20dp"
+                android:layout_marginRight="170dp"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/userEcopoints"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ecopoints: 0"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Password Section -->
+        <Button
+            android:id="@+id/showPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="View Password" />
+
+        <Button
+            android:id="@+id/goToChangePassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Change Password" />
+
+    </LinearLayout>
+
+</ScrollView>

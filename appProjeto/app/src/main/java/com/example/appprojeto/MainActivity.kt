@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import android.Manifest
 import android.app.Activity
+import com.example.app.ProfileActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -139,6 +140,14 @@ class MainActivity : AppCompatActivity() {
                     val intent = Intent(this, LeaderboardActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
+                    drawerLayout.closeDrawer(navView)
+                    true
+                }
+                R.id.meu_perfil -> {
+                    // Ação para o item Meu Perfil
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    intent.putExtra("uid", getCurrentUserUid())
+                    startActivity(intent)
                     drawerLayout.closeDrawer(navView)
                     true
                 }
