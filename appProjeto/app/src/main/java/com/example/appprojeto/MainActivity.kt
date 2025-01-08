@@ -1,9 +1,11 @@
 package com.example.appprojeto
 
 import ORSRouteResponse
-import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
@@ -21,6 +23,8 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import android.Manifest
+import android.app.Activity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -28,9 +32,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import com.example.appprojeto.classes.MapClickOverlay
+import com.example.ecopointapp.EcopointManager
+
+import org.osmdroid.views.overlay.Overlay
 
 class MainActivity : AppCompatActivity() {
-
+    companion object {
+        const val REQUEST_CODE_LOAD_ROUTES = 1001  // Defina a constante aqui
+    }
     private lateinit var map: MapView
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navView: NavigationView
@@ -43,10 +53,20 @@ class MainActivity : AppCompatActivity() {
     private var startPoint: GeoPoint? = null
     private var endPoint: GeoPoint? = null
     private val REQUEST_CODE_LOAD_ROUTES = 1
+    private var canSelectPoints = false  // Flag para saber se pode escolher pontos
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var fabAddEcopoint: FloatingActionButton
+    private lateinit var ecopointManager: EcopointManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        map = findViewById(R.id.map)
+        fabAddEcopoint = findViewById(R.id.fab_add_ecopoint)
+
+        ecopointManager = EcopointManager(this, map, fabAddEcopoint)
 
         // Inicializar Retrofit para chamada à API
         val logging = HttpLoggingInterceptor().apply {
@@ -64,12 +84,22 @@ class MainActivity : AppCompatActivity() {
 
         // Configurar a interface do mapa
         Configuration.getInstance()
-            .load(applicationContext, applicationContext.getSharedPreferences("osm_prefs", MODE_PRIVATE))
+            .load(
+                applicationContext,
+                applicationContext.getSharedPreferences("osm_prefs", MODE_PRIVATE)
+            )
         Configuration.getInstance().userAgentValue = packageName
 
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
         map.setBuiltInZoomControls(true)
+
+        // Adicionar o listener para toques no mapa
+        map.overlays.add(MapClickOverlay { geoPoint ->
+            if (canSelectPoints) {
+                handleMapClick(geoPoint)
+            }
+        })
 
         // Inicializar DrawerLayout e NavigationView
         drawerLayout = findViewById(R.id.drawer_layout)
@@ -83,76 +113,129 @@ class MainActivity : AppCompatActivity() {
 
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_home -> {
-
-                    true
-                }
+                R.id.nav_home -> true
                 R.id.nav_routes -> {
-
                     val intent = Intent(this, RoutesActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
                     drawerLayout.closeDrawer(navView)
                     true
                 }
-                R.id.nav_settings -> {
-
+                R.id.nav_ecopoints -> {
+                    val intent = Intent(this, EcopointsActivity::class.java)
+                    intent.putExtra("uid", getCurrentUserUid())
+                    startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
+                    drawerLayout.closeDrawer(navView)
                     true
                 }
                 else -> false
             }
         }
+
         // Configurar FloatingActionButton
         val fabCenterUser: FloatingActionButton = findViewById(R.id.fab_center_user)
         fabCenterUser.setOnClickListener { setupUserLocation() }
 
-        setupUserLocation()
+        // Configurar o botão add_trail
+        val fabAddTrail: FloatingActionButton = findViewById(R.id.fab_add_trail)
+        fabAddTrail.setOnClickListener {
+            handleAddTrail()
+        }
 
-        // Captura de toques no mapa
-        map.overlays.add(object : org.osmdroid.views.overlay.Overlay() {
-            override fun onSingleTapConfirmed(e: android.view.MotionEvent, mapView: MapView): Boolean {
-                val projection = mapView.projection
-                val tappedLocation = projection.fromPixels(e.x.toInt(), e.y.toInt()) as GeoPoint
-                handleMapTap(tappedLocation)
-                return true
-            }
-        })
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        checkLocationPermissions()
+    }
+
+    private fun checkLocationPermissions() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                1001
+            )
+        } else {
+            // Centralize a localização automaticamente
+            setupUserLocation()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // Centralize a localização automaticamente após a permissão ser concedida
+            setupUserLocation()
+        } else {
+            Toast.makeText(this, "Permissão de localização negada", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun getCurrentUserUid(): String? {
         return firebaseAuth.currentUser?.uid
     }
 
-    private fun handleMapTap(location: GeoPoint) {
+    private fun handleAddTrail() {
         if (startPoint == null) {
-            startPoint = location
-            addMarker(location, "Ponto de Partida")
+            Toast.makeText(
+                this,
+                "Por favor, selecione o ponto de partida no mapa.",
+                Toast.LENGTH_SHORT
+            ).show()
+            canSelectPoints = true
+            return
+        }
+
+        if (endPoint == null) {
+            Toast.makeText(
+                this,
+                "Por favor, selecione o ponto de chegada no mapa.",
+                Toast.LENGTH_SHORT
+            ).show()
+            canSelectPoints = true
+            return
+        }
+
+        calculateRoute()
+    }
+
+    private fun handleMapClick(latLon: GeoPoint) {
+        // Verifica se o ponto de partida já foi definido
+        if (startPoint == null) {
+            startPoint = latLon
+            addMarker(latLon, "Ponto de Partida")
             Toast.makeText(this, "Ponto de Partida Adicionado!", Toast.LENGTH_SHORT).show()
         } else if (endPoint == null) {
-            endPoint = location
-            addMarker(location, "Destino")
-            Toast.makeText(this, "Destino Adicionado! Calculando Rota...", Toast.LENGTH_SHORT).show()
-            calculateRoute()
-        } else {
-            Toast.makeText(this, "Rota já foi calculada. Reinicie para testar novamente.", Toast.LENGTH_SHORT).show()
+            endPoint = latLon
+            addMarker(latLon, "Destino")
+            Toast.makeText(this, "Destino Adicionado! Calculando Rota...", Toast.LENGTH_SHORT)
+                .show()
+            canSelectPoints = false  // Desativa a seleção de pontos após definir ambos
         }
     }
-
-    private fun addMarker(location: GeoPoint, title: String) {
-        val marker = Marker(map)
-        marker.position = location
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        marker.title = title
-        map.overlays.add(marker)
-        map.invalidate()
-    }
-
     private fun calculateRoute() {
         val start = startPoint
         val end = endPoint
 
         if (start == null || end == null) {
-            Toast.makeText(this, "Por favor, adicione o ponto de partida e o destino.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Por favor, adicione o ponto de partida e o destino.",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
         val startCoord = "${start.longitude},${start.latitude}"
@@ -162,7 +245,10 @@ class MainActivity : AppCompatActivity() {
 
         val call = orsService.getRoute(startCoord, endCoord, orsApiKey)
         call.enqueue(object : Callback<ORSRouteResponse> {
-            override fun onResponse(call: Call<ORSRouteResponse>, response: Response<ORSRouteResponse>) {
+            override fun onResponse(
+                call: Call<ORSRouteResponse>,
+                response: Response<ORSRouteResponse>
+            ) {
                 if (response.isSuccessful) {
                     val body = response.body()
                     Log.d("MainActivity", "Resposta da API: ${body.toString()}")
@@ -179,138 +265,361 @@ class MainActivity : AppCompatActivity() {
                                 val routePoints = feature.geometry.coordinates.map { coord ->
                                     GeoPoint(coord[1], coord[0])
                                 }
+
+                                // Adicionar instruções de navegação (step instructions)
+                                val instructions = segment.steps.map { step ->
+                                    step.instruction
+                                }
+
                                 drawRoute(routePoints)
 
-                                // Adicionar marcadores de instrução
+                                // Adicionar marcadores de instrução no mapa
                                 for (step in segment.steps) {
                                     val point = routePoints[step.way_points.last()]
                                     addMarker(point, step.instruction)
                                 }
 
                                 showRouteInfoDialog(distance, duration)
-                                showSaveRouteConfirmationDialog(routePoints, distance, duration) // Exibir confirmação
+
+                                // Chama a função de salvar, passando as instruções
+                                showSaveRouteConfirmationDialog(
+                                    routePoints,
+                                    distance,
+                                    duration,
+                                    instructions  // Passa as instruções aqui
+                                )
                             } else {
                                 Log.e("MainActivity", "Erro: Nenhum segmento encontrado.")
-                                Toast.makeText(this@MainActivity, "Nenhum segmento encontrado.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Nenhum segmento encontrado.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } else {
                             Log.e("MainActivity", "Erro: Nenhuma feature ou segmento encontrado.")
-                            Toast.makeText(this@MainActivity, "Nenhuma feature ou segmento encontrado.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Nenhuma feature ou segmento encontrado.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     } else {
-                        Log.e("MainActivity", "Erro: Resposta da API vazia ou sem rotas. ${response.raw()}")
-                        Toast.makeText(this@MainActivity, "Erro: Resposta da API vazia ou sem rotas.", Toast.LENGTH_SHORT).show()
+                        Log.e(
+                            "MainActivity",
+                            "Erro: Resposta da API vazia ou sem rotas. ${response.raw()}"
+                        )
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Erro: Resposta da API vazia ou sem rotas.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: "Erro desconhecido"
-                    Log.e("API_ERROR", "Código: ${response.code()}, Mensagem: ${response.message()}, Corpo: $errorBody")
-                    Toast.makeText(this@MainActivity, "Erro da API: Código ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Log.e(
+                        "API_ERROR",
+                        "Código: ${response.code()}, Mensagem: ${response.message()}, Corpo: $errorBody"
+                    )
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Erro da API: Código ${response.code()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
             override fun onFailure(call: Call<ORSRouteResponse>, t: Throwable) {
-                Log.e("MainActivity", "Erro ao calcular rota: ${t.message}")
-                Toast.makeText(this@MainActivity, "Erro ao calcular rota: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.e("MainActivity", "Erro na API: ${t.message}", t)
+                Toast.makeText(
+                    this@MainActivity,
+                    "Erro na comunicação com a API.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }
 
+
     private fun drawRoute(routePoints: List<GeoPoint>) {
-        if (routePoints.isNotEmpty()) {
-            val polyline = Polyline()
-            polyline.setPoints(routePoints)
-            polyline.title = "Rota Calculada"
-            map.overlays.add(polyline)
-            map.invalidate()
-        } else {
-            Log.e("MainActivity", "Nenhum ponto de rota para desenhar.")
-        }
+        val polyline = Polyline()
+        polyline.outlinePaint.strokeWidth = 10f
+        polyline.setPoints(routePoints)
+        map.overlays.add(polyline)
+        map.invalidate()
     }
 
-    private fun saveRouteToFirestore(routePoints: List<GeoPoint>, distance: Double, duration: Double) {
-        val uid = getCurrentUserUid() ?: return
+    private fun showRouteInfoDialog(distance: Double, duration: Double) {
+        val message = "Distância: %.2f km\nDuração: %.2f horas".format(distance, duration)
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Informações da Rota")
+            .setMessage(message)
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun showSaveRouteConfirmationDialog(
+        routePoints: List<GeoPoint>,
+        distance: Double,
+        duration: Double,
+        instructions: List<String> // Adiciona o parâmetro instructions
+    ) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Salvar Rota")
+            .setMessage("Você deseja salvar esta rota?")
+            .setPositiveButton("Sim") { _, _ ->
+                saveRouteToFirestore(
+                    routePoints,
+                    distance,
+                    duration,
+                    instructions
+                )
+            }
+            .setNegativeButton("Não", null)
+            .show()
+    }
+
+
+
+    private fun saveRouteToFirestore(
+        routePoints: List<GeoPoint>,
+        distance: Double,
+        duration: Double,
+        instructions: List<String> // Adiciona o parâmetro instructions
+    ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            Log.e("Firebase", "Usuário não autenticado.")
+            Toast.makeText(this, "Usuário não autenticado.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Filtrando apenas os pontos que você quer enviar
+        // Por exemplo, você pode pegar apenas o ponto de origem e os pontos que correspondem às instruções.
+        val filteredRoutePoints = routePoints.take(instructions.size + 1) // Pega o ponto de origem + número de instruções
+
+        // Log para ver os pontos filtrados
+        Log.d("RouteData", "Pontos filtrados: ${filteredRoutePoints.size}, $filteredRoutePoints")
+
+        // Usando os pontos filtrados
+        val pointsList = filteredRoutePoints.map { mapOf("latitude" to it.latitude, "longitude" to it.longitude) }
+
+        // Cria a lista de instruções
+        val instructionsList = instructions.mapIndexed { index, instruction ->
+            mapOf("step" to (index + 1), "instruction" to instruction)
+        }
+
+        // Verifica e loga as instruções antes de salvar
+        Log.d("RouteData", "Instruções antes de salvar no Firestore: ${instructionsList.joinToString(", ")}")
 
         val routeData = hashMapOf(
             "uid" to uid,
-            "points" to routePoints.map { mapOf("latitude" to it.latitude, "longitude" to it.longitude) },
+            "points" to pointsList,
             "distance" to distance,
-            "duration" to duration
+            "duration" to duration,
+            "instructions" to instructionsList,  // Instruções sendo salvas
+            "timestamp" to System.currentTimeMillis()
         )
+
+        Log.d("Firebase", "Dados a serem salvos: $routeData")
 
         firestore.collection("routes")
             .add(routeData)
             .addOnSuccessListener { documentReference ->
-                Log.d("MainActivity", "Rota salva com ID: ${documentReference.id}")
+                Log.d("Firebase", "Rota salva com sucesso com ID: ${documentReference.id}")
+                Toast.makeText(this, "Rota salva com sucesso!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Log.e("MainActivity", "Erro ao salvar a rota", e)
+                Log.e("Firebase", "Erro ao salvar a rota: ${e.message}", e)
+                Toast.makeText(this, "Erro ao salvar rota.", Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun showRouteInfoDialog(distance: Double, duration: Double) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Informações da Rota")
-        builder.setMessage("Distância: %.2f km\nTempo estimado: %.1f horas".format(distance, duration))
-        builder.setPositiveButton("OK") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        val dialog: AlertDialog = builder.create()
-        dialog.show()
-    }
-
-    private fun showSaveRouteConfirmationDialog(routePoints: List<GeoPoint>, distance: Double, duration: Double) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Salvar Rota")
-        builder.setMessage("Deseja salvar esta rota?\n\nDistância: %.2f km\nTempo estimado: %.1f horas".format(distance, duration))
-        builder.setPositiveButton("Sim") { dialog, _ ->
-            saveRouteToFirestore(routePoints, distance, duration)
-            dialog.dismiss()
-        }
-        builder.setNegativeButton("Não") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        val dialog: AlertDialog = builder.create()
-        dialog.show()
-    }
 
     private fun setupUserLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            val defaultLocation = GeoPoint(38.7169, -9.1399) // Lisboa
-            centerMapOnLocation(defaultLocation)
-        } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1001)
+            return
+        }
+
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val userGeoPoint = GeoPoint(location.latitude, location.longitude)
+                    addMarker(userGeoPoint, "Localização Atual")
+                    centerMapOnMarker(userGeoPoint)
+                } else {
+                    // Tentar obter a localização novamente
+                    fusedLocationClient.lastLocation.addOnSuccessListener { locationRetry: Location? ->
+                        if (locationRetry != null) {
+                            val userGeoPointRetry = GeoPoint(locationRetry.latitude, locationRetry.longitude)
+                            addMarker(userGeoPointRetry, "Localização Atual (Tentativa 2)")
+                            centerMapOnMarker(userGeoPointRetry)
+                        } else {
+                            Toast.makeText(this, "Não foi possível obter a localização. Tente novamente.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "Permissão de localização necessária. Ative nas configurações.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun centerMapOnLocation(location: GeoPoint) {
-        map.controller.setZoom(15.0)
-        map.controller.animateTo(location)
+    private fun addMarker(geoPoint: GeoPoint, title: String) {
+        val marker = Marker(map)
+        marker.position = geoPoint
+        marker.title = title
+        map.overlays.add(marker)
         map.invalidate()
     }
 
-    private fun loadRoutesFromFirestore() {
-        val uid = getCurrentUserUid() ?: return
-
-        firestore.collection("routes")
-            .whereEqualTo("uid", uid)
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    val points = document.data["points"] as List<Map<String, Double>>
-                    val distance = document.data["distance"] as Double
-                    val duration = document.data["duration"] as Double
-
-                    val routePoints = points.map { GeoPoint(it["latitude"]!!, it["longitude"]!!) }
-                    drawRoute(routePoints)
-
-                    // Exibir informações da rota ou adicionar lógica adicional
-                    showRouteInfoDialog(distance, duration)
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("MainActivity", "Erro ao carregar rotas", e)
-            }
+    private fun centerMapOnMarker(geoPoint: GeoPoint) {
+        map.controller.animateTo(geoPoint)
+        map.controller.setZoom(18.0)
     }
+    // Declare a variável global para armazenar os overlays (rotas e marcadores)
+    private val routeOverlays = mutableListOf<Overlay>()
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            // Verifica o tipo de dado (rota ou ecoponto)
+            val type = data.getStringExtra("type") // Este campo pode ser "route" ou "ecopoint"
+
+            if (type == "route") {
+                val pointsList = data.getSerializableExtra("points") as? ArrayList<HashMap<String, Double>>
+                val distance = data.getDoubleExtra("distance", 0.0)
+                val duration = data.getDoubleExtra("duration", 0.0)
+                val instructions = data.getStringArrayListExtra("instructions")
+
+                if (instructions != null) {
+                    Log.d("RouteData", "Instruções: ${instructions.joinToString(", ")}")
+                }
+
+                // Converte os pontos recebidos para uma lista de GeoPoint
+                val geoPoints = pointsList?.mapNotNull {
+                    val latitude = it["latitude"]
+                    val longitude = it["longitude"]
+                    if (latitude != null && longitude != null) {
+                        GeoPoint(latitude, longitude)
+                    } else {
+                        null
+                    }
+                }
+
+                if (geoPoints != null && geoPoints.isNotEmpty()) {
+                    Log.d("MainActivity", "Drawing route with Points=$geoPoints, Distance=$distance, Duration=$duration")
+
+                    // Limpar a rota anterior (se houver)
+                    removePreviousRoute()
+
+                    // Adiciona a rota no mapa
+                    val routePolyline = Polyline().apply {
+                        setPoints(geoPoints)
+                        color = resources.getColor(R.color.black, theme) // Cor da linha
+                        width = 8.0f // Largura da linha
+                    }
+
+                    map.overlayManager.add(routePolyline) // Adiciona a nova rota ao mapa
+                    routeOverlays.add(routePolyline) // Armazena a nova rota nos overlays
+
+                    // Adiciona marcador no ponto inicial
+                    val startMarker = Marker(map).apply {
+                        position = geoPoints.first()
+                        title = "Ponto Inicial"
+                    }
+                    map.overlays.add(startMarker)
+                    routeOverlays.add(startMarker) // Armazena o marcador
+
+                    // Adiciona marcador no ponto final
+                    val endMarker = Marker(map).apply {
+                        position = geoPoints.last()
+                        title = "Ponto Final"
+                    }
+                    map.overlays.add(endMarker)
+                    routeOverlays.add(endMarker) // Armazena o marcador
+
+                    // Adiciona marcadores para os pontos intermediários com instruções
+                    // Debugging para verificar o número de pontos intermediários e instruções
+                    Log.d("MainActivity", "Número de pontos: ${geoPoints.size}")
+                    Log.d("MainActivity", "Número de instruções: ${instructions?.size ?: 0}")
+
+                    geoPoints.drop(1).dropLast(1).forEachIndexed { index, geoPoint ->
+                        val instruction = instructions?.getOrNull(index) ?: "Sem instrução"
+
+                        // Log das instruções para ver o que está sendo recuperado
+                        Log.d("MainActivity", "Ponto $index: $geoPoint -> Instrução: $instruction")
+
+                        val marker = Marker(map).apply {
+                            position = geoPoint
+                            title = instruction
+                        }
+                        map.overlays.add(marker)
+                        routeOverlays.add(marker) // Armazena o marcador
+                    }
+
+
+
+
+
+                    map.invalidate() // Atualiza o mapa
+
+                    // Centralizar o mapa na média dos pontos
+                    centerMapOnRoute(geoPoints)
+                } else {
+                    Log.e("MainActivity", "No valid GeoPoints received to draw the route.")
+                }
+
+            } else if (type == "ecopoint") {
+                // Dados para o Ecoponto
+                val latitude = data.getDoubleExtra("latitude", 0.0)
+                val longitude = data.getDoubleExtra("longitude", 0.0)
+                val name = data.getStringExtra("name") ?: "Ecoponto"
+
+                // Verifica se os dados do Ecoponto são válidos
+                if (latitude != 0.0 && longitude != 0.0) {
+                    Log.d("MainActivity", "Displaying Ecopoint at ($latitude, $longitude), Name=$name")
+
+                    // Cria o marcador para o ecoponto
+                    val ecopointMarker = Marker(map).apply {
+                        position = GeoPoint(latitude, longitude)
+                        title = name
+                    }
+
+                    map.overlays.add(ecopointMarker) // Adiciona o marcador no mapa
+                    routeOverlays.add(ecopointMarker) // Armazena o marcador no overlay
+                    map.invalidate() // Atualiza o mapa
+                } else {
+                    Log.e("MainActivity", "Invalid Ecopoint data received.")
+                }
+            } else {
+                Log.e("MainActivity", "Unknown type received: $type")
+            }
+        }
+    }
+
+
+    // Função para centralizar o mapa no ponto médio da rota
+    private fun centerMapOnRoute(geoPoints: List<GeoPoint>) {
+        val latitudes = geoPoints.map { it.latitude }
+        val longitudes = geoPoints.map { it.longitude }
+        val centerLatitude = latitudes.average()
+        val centerLongitude = longitudes.average()
+
+        val centerPoint = GeoPoint(centerLatitude, centerLongitude)
+        map.controller.setCenter(centerPoint) // Centraliza o mapa no ponto médio
+    }
+
+    // Função para remover rotas anteriores
+    private fun removePreviousRoute() {
+        // Remove todos os overlays da rota anterior
+        routeOverlays.forEach { overlay ->
+            map.overlayManager.remove(overlay)
+        }
+        routeOverlays.clear() // Limpa a lista de overlays armazenados
+    }
+
 }

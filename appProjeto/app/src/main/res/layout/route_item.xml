@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Texto da Rota -->
+    <TextView
+        android:id="@+id/route_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Distância: 0.00 km, Duração: 0.0 horas"
+        android:textSize="16sp"
+        android:ellipsize="end"
+        android:maxLines="1"/>
+
+    <!-- Ícone de Lixeira -->
+    <ImageView
+        android:id="@+id/delete_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="Delete Route"
+        android:layout_marginStart="8dp"
+        android:layout_gravity="center_vertical"/>
+
+</LinearLayout>

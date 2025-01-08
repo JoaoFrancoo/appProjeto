@@ -89,36 +89,7 @@
             android:textColor="@android:color/white"
             android:textColorHint="#CCCCCC" />
 
-        <!-- Foto de perfil -->
-        <ImageView
-            android:id="@+id/profileImageView"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginBottom="12dp"
-            android:contentDescription="Foto de perfil"
-            android:src="@drawable/profile_foto"
-            android:scaleType="centerCrop" />
 
-        <!-- Botão Selecionar Foto -->
-        <Button
-            android:id="@+id/btnSelectPhoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="Adicionar Foto" />
-
-        <!-- Campo Data de Nascimento -->
-        <EditText
-            android:id="@+id/etBirthDate"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="16dp"
-            android:hint="Data de Nascimento (dd/mm/aaaa)"
-            android:inputType="date"
-            android:padding="8dp"
-            android:background="#80000000"
-            android:textColor="@android:color/white"
-            android:textColorHint="#CCCCCC" />
 
         <!-- Botão Registrar -->
         <Button

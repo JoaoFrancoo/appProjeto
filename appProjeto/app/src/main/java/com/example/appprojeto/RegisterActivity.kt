@@ -59,6 +59,13 @@ class RegisterActivity : AppCompatActivity() {
 
             registerUser(name, email, password)
         }
+
+        // Configurar botão de voltar para login
+        binding.btnBackToLogin.setOnClickListener {
+            // Redireciona para a LoginActivity
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()  // Finaliza a RegisterActivity para evitar voltar a ela
+        }
     }
 
     private fun validateInputs(name: String, email: String, password: String): Boolean {

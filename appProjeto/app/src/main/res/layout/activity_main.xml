@@ -48,7 +48,8 @@
             android:layout_above="@id/fab_add_ecopoint"
             android:layout_alignParentStart="true"
             android:backgroundTint="@color/white"
-           />
+            />
+
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/menu_button"

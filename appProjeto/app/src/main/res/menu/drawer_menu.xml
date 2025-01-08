@@ -6,6 +6,6 @@
         android:id="@+id/nav_routes"
         android:title="Minhas Rotas" />
     <item
-        android:id="@+id/nav_settings"
-        android:title="Configurações" />
+        android:id="@+id/nav_ecopoints"
+        android:title="Meus Ecopontos" />
 </menu>

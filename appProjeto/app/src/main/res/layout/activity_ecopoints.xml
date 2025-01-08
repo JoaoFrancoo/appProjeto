@@ -4,7 +4,7 @@
 
     <!-- ListView para exibir as rotas -->
     <ListView
-        android:id="@+id/routes_list"
+        android:id="@+id/ecopoints_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"

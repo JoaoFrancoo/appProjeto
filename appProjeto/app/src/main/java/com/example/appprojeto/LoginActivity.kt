@@ -75,12 +75,11 @@ class LoginActivity : AppCompatActivity() {
 
     private fun checkLoginStatus() {
         val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
-        val lastLogin = sharedPreferences.getLong("lastLogin", 0) // Pega o timestamp do último login
+        val lastLogin = sharedPreferences.getLong("lastLogin", 0)
         val currentTime = System.currentTimeMillis()
-        val oneDayInMillis = 24 * 60 * 60 * 1000 // 1 dia em milissegundos
+        val oneDayInMillis = 24 * 60 * 60 * 1000
 
         if (lastLogin != 0L && (currentTime - lastLogin) < oneDayInMillis) {
-            // Se o último login foi há menos de 1 dia, redirecionar para MainActivity
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
