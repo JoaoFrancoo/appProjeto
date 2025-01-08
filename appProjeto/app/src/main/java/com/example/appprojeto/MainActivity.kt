@@ -1,5 +1,6 @@
 package com.example.appprojeto
 
+import LeaderboardActivity
 import ORSRouteResponse
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -113,7 +114,11 @@ class MainActivity : AppCompatActivity() {
 
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_home -> true
+                R.id.nav_home -> {
+                    // Aqui você pode adicionar uma ação para o "Home", caso necessário
+                    drawerLayout.closeDrawer(navView)
+                    true
+                }
                 R.id.nav_routes -> {
                     val intent = Intent(this, RoutesActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
@@ -123,6 +128,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_ecopoints -> {
                     val intent = Intent(this, EcopointsActivity::class.java)
+                    intent.putExtra("uid", getCurrentUserUid())
+                    startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
+                    drawerLayout.closeDrawer(navView)
+                    true
+                }
+                R.id.nav_leaderboard -> {
+                    val intent = Intent(this, LeaderboardActivity::class.java) // Ajustar para a classe correta
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
                     drawerLayout.closeDrawer(navView)

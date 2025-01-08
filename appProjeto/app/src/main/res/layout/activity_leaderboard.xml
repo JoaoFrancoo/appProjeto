@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#EFEFEF">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/leaderboardTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🏆 Leaderboard 🏆"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="#4CAF50"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Pódio -->
+    <LinearLayout
+        android:id="@+id/podiumLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="24dp">
+
+        <!-- Segundo Lugar -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/podium_background_silver"
+            android:layout_margin="8dp"
+            android:elevation="4dp">
+
+            <TextView
+                android:id="@+id/secondPlaceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2º"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000" />
+
+            <TextView
+                android:id="@+id/secondPlaceDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 km"
+                android:textColor="#000" />
+        </LinearLayout>
+
+        <!-- Primeiro Lugar -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="300dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/podium_background_gold"
+            android:layout_margin="8dp"
+            android:elevation="6dp">
+
+            <TextView
+                android:id="@+id/firstPlaceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1º"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#000" />
+
+            <TextView
+                android:id="@+id/firstPlaceDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 km"
+                android:textColor="#000" />
+        </LinearLayout>
+
+        <!-- Terceiro Lugar -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/podium_background_bronze"
+            android:layout_margin="8dp"
+            android:elevation="4dp">
+
+            <TextView
+                android:id="@+id/thirdPlaceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3º"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000" />
+
+            <TextView
+                android:id="@+id/thirdPlaceDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 km"
+                android:textColor="#000" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Lista Completa (opcional) -->
+    <TextView
+        android:id="@+id/leaderboardTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lista completa:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#000"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
