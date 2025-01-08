@@ -26,17 +26,28 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var progressIndicator: CircularProgressIndicator
-    private var profileImageUri: Uri? = null // Declara a variável para armazenar a URI da imagem
+    private var profileImageUri: Uri? = null
+
+    companion object {
+        private const val TAG = "RegisterActivity"
+        private const val PICK_IMAGE_REQUEST = 1
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Botão para selecionar imagem
+        // Inicializar Firebase
+        auth = Firebase.auth
+        firestore = FirebaseFirestore.getInstance()
+
+        // Configurar botão para selecionar imagem
         binding.ivProfilePhoto.setOnClickListener {
             openImagePicker()
         }
+
+        // Configurar botão de registro
         binding.btnRegister.setOnClickListener {
             val name = binding.etName.text.toString().trim()
             val email = binding.etEmail.text.toString().trim()
@@ -54,13 +65,11 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        // Usar view binding
-        binding = ActivityRegisterBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        // Inicializar Firebase
-        auth = Firebase.auth
-        firestore = FirebaseFirestore.getInstance()
+        // Configurar botão de voltar para login
+        binding.btnBackToLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
 
         // Configurar indicador de progresso
         progressIndicator = CircularProgressIndicator(this)
@@ -71,27 +80,6 @@ class RegisterActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
-        }
-
-        // Configurar botão de registro
-        binding.btnRegister.setOnClickListener {
-            val name = binding.etName.text.toString().trim()
-            val email = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString()
-
-            if (!validateInputs(name, email, password)) return@setOnClickListener
-
-            binding.btnRegister.isEnabled = false
-            showProgress()
-
-            registerUser(name, email, password, null)
-        }
-
-        // Configurar botão de voltar para login
-        binding.btnBackToLogin.setOnClickListener {
-            // Redireciona para a LoginActivity
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()  // Finaliza a RegisterActivity para evitar voltar a ela
         }
     }
 
@@ -112,6 +100,29 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         return true
+    }
+
+    private fun openImagePicker() {
+        Log.d(TAG, "Abrindo seletor de imagem")
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        startActivityForResult(Intent.createChooser(intent, "Selecione uma imagem"), PICK_IMAGE_REQUEST)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d(TAG, "onActivityResult chamado - requestCode: $requestCode, resultCode: $resultCode")
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            profileImageUri = data.data
+            Log.d(TAG, "Imagem selecionada: $profileImageUri")
+            if (profileImageUri != null) {
+                binding.ivProfilePhoto.setImageURI(profileImageUri)
+            } else {
+                showToast("Erro: Nenhuma imagem foi selecionada.")
+            }
+        } else {
+            Log.d(TAG, "Nenhuma imagem selecionada ou ação cancelada")
+        }
     }
 
     private fun registerUser(name: String, email: String, password: String, profileImageUrl: String?) {
@@ -163,45 +174,6 @@ class RegisterActivity : AppCompatActivity() {
         Log.w(TAG, "Erro ao registrar usuário", exception)
     }
 
-    private fun showProgress() {
-        progressIndicator.show()
-    }
-
-    private fun hideProgress() {
-        progressIndicator.hide()
-    }
-
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-    companion object {
-        private const val TAG = "RegisterActivity"
-        private const val PICK_IMAGE_REQUEST = 1
-    }
-
-    private fun openImagePicker() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.type = "image/*"
-        startActivityForResult(Intent.createChooser(intent, "Selecione uma imagem"), PICK_IMAGE_REQUEST)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            val selectedImageUri = data.data
-            if (selectedImageUri != null) {
-                if (profileImageUri != null) {
-                    binding.ivProfilePhoto.setImageURI(profileImageUri) // Exibe a imagem no ImageView
-                } else {
-                    showToast("Erro: A imagem não foi carregada corretamente.")
-                }
-
-            } else {
-                showToast("Erro: Nenhuma imagem foi selecionada.")
-            }
-        }
-    }
     private fun uploadProfileImage(name: String, email: String, password: String) {
         if (profileImageUri == null) {
             showToast("Por favor, selecione uma imagem de perfil.")
@@ -224,5 +196,16 @@ class RegisterActivity : AppCompatActivity() {
                 }
         }
     }
-}
 
+    private fun showProgress() {
+        progressIndicator.show()
+    }
+
+    private fun hideProgress() {
+        progressIndicator.hide()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}
