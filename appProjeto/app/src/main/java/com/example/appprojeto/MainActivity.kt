@@ -173,13 +173,28 @@ class MainActivity : AppCompatActivity() {
         // Logando o logout
         Log.d("Logout", "Usuário deslogado do Firebase")
 
-        // Redirecionar para a tela de login
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)  // Limpa a pilha de atividades
-        startActivity(intent)
-        finish()  // Finaliza a MainActivity para que o usuário não possa voltar
-    }
+        // Forçar a destruição do token de autenticação
+        val firebaseUser = firebaseAuth.currentUser
+        firebaseUser?.getIdToken(true)?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // O token foi atualizado (e invalidado)
+                val idToken = task.result?.token
+                Log.d("Logout", "Token destruído e usuário deslogado.")
+            } else {
+                Log.e("Logout", "Falha ao destruir o token", task.exception)
+            }
 
+            // Redirecionar para a tela de login
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()  // Finaliza a activity atual para que o usuário não possa voltar com o botão de voltar
+        }
+
+        // Garantir que o usuário seja redirecionado para o login mesmo sem a necessidade de token
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
 
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(
