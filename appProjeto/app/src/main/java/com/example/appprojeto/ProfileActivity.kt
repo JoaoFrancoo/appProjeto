@@ -32,7 +32,6 @@ class ProfileActivity : AppCompatActivity() {
 
         profileImage = findViewById(R.id.profileImage)
         val changeProfileImage: Button = findViewById(R.id.changeProfileImage)
-        val showPassword: Button = findViewById(R.id.showPassword)
         val goToChangePassword: Button = findViewById(R.id.goToChangePassword)
         val userName: TextView = findViewById(R.id.userName)
         val userEmail: TextView = findViewById(R.id.userEmail)
@@ -74,11 +73,6 @@ class ProfileActivity : AppCompatActivity() {
         // Botão para trocar imagem de perfil
         changeProfileImage.setOnClickListener {
             openGallery() // Abre a galeria para selecionar uma imagem
-        }
-
-        // Botão para visualizar senha (exibição explicativa)
-        showPassword.setOnClickListener {
-            Toast.makeText(this, "A senha não pode ser mostrada por questões de segurança. Utilize a opção de alterar a senha.", Toast.LENGTH_LONG).show()
         }
 
         // Botão para navegar até a página de alteração de senha
