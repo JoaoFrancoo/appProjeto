@@ -114,11 +114,12 @@ class MainActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home -> {
-                    // Aqui você pode adicionar uma ação para o "Home", caso necessário
+                    // Ação para o item Home
                     drawerLayout.closeDrawer(navView)
                     true
                 }
                 R.id.nav_routes -> {
+                    // Ação para o item Routes
                     val intent = Intent(this, RoutesActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
@@ -126,6 +127,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_ecopoints -> {
+                    // Ação para o item Ecopoints
                     val intent = Intent(this, EcopointsActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
@@ -133,9 +135,16 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_leaderboard -> {
-                    val intent = Intent(this, LeaderboardActivity::class.java) // Ajustar para a classe correta
+                    // Ação para o item Leaderboard
+                    val intent = Intent(this, LeaderboardActivity::class.java)
                     intent.putExtra("uid", getCurrentUserUid())
                     startActivityForResult(intent, REQUEST_CODE_LOAD_ROUTES)
+                    drawerLayout.closeDrawer(navView)
+                    true
+                }
+                R.id.nav_logout -> {
+                    // Lógica de logout
+                    logout()
                     drawerLayout.closeDrawer(navView)
                     true
                 }
@@ -155,6 +164,16 @@ class MainActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         checkLocationPermissions()
+    }
+
+    private fun logout() {
+        // Desconectar do Firebase
+        firebaseAuth.signOut()
+
+        // Redirecionar para a tela de login
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()  // Finaliza a activity atual para que o usuário não possa voltar com o botão de voltar
     }
 
     private fun checkLocationPermissions() {

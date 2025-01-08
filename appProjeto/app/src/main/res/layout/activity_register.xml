@@ -89,7 +89,29 @@
             android:textColor="@android:color/white"
             android:textColorHint="#CCCCCC" />
 
+        <!-- Imagem de Perfil -->
+        <ImageView
+            android:id="@+id/ivProfilePhoto"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/profile_foto"
+            android:contentDescription="Foto de perfil"
+            android:scaleType="centerCrop"
+            android:background="@drawable/circle_with_shadow" />
 
+        <!-- Botão Selecionar Foto -->
+        <Button
+            android:id="@+id/btnSelectPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Selecionar Foto"
+            android:backgroundTint="#FF5722"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
 
         <!-- Botão Registrar -->
         <Button

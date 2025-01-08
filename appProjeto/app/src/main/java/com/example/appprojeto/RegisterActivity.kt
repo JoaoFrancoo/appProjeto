@@ -1,6 +1,8 @@
 package com.example.appprojeto
 
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -17,15 +19,38 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var progressIndicator: CircularProgressIndicator
+    private var profileImageUri: Uri? = null // Declara a variável para armazenar a URI da imagem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Botão para selecionar imagem
+        binding.ivProfilePhoto.setOnClickListener {
+            openImagePicker()
+        }
+        binding.btnRegister.setOnClickListener {
+            val name = binding.etName.text.toString().trim()
+            val email = binding.etEmail.text.toString().trim()
+            val password = binding.etPassword.text.toString()
+
+            if (!validateInputs(name, email, password)) return@setOnClickListener
+
+            binding.btnRegister.isEnabled = false
+            showProgress()
+
+            if (profileImageUri != null) {
+                uploadProfileImage(name, email, password)
+            } else {
+                registerUser(name, email, password, null)
+            }
+        }
 
         // Usar view binding
         binding = ActivityRegisterBinding.inflate(layoutInflater)
@@ -57,7 +82,7 @@ class RegisterActivity : AppCompatActivity() {
             binding.btnRegister.isEnabled = false
             showProgress()
 
-            registerUser(name, email, password)
+            registerUser(name, email, password, null)
         }
 
         // Configurar botão de voltar para login
@@ -87,7 +112,7 @@ class RegisterActivity : AppCompatActivity() {
         return true
     }
 
-    private fun registerUser(name: String, email: String, password: String) {
+    private fun registerUser(name: String, email: String, password: String, profileImageUrl: String?) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 hideProgress()
@@ -95,7 +120,7 @@ class RegisterActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     user?.let {
-                        saveUserToFirestore(it.uid, name, email)
+                        saveUserToFirestore(it.uid, name, email, profileImageUrl)
                     }
                     showToast("Registro concluído!")
                     startActivity(Intent(this, LoginActivity::class.java))
@@ -106,11 +131,12 @@ class RegisterActivity : AppCompatActivity() {
             }
     }
 
-    private fun saveUserToFirestore(uid: String, name: String, email: String) {
+    private fun saveUserToFirestore(uid: String, name: String, email: String, profileImageUrl: String?) {
         val user = hashMapOf(
             "uid" to uid,
             "name" to name,
-            "email" to email
+            "email" to email,
+            "profileImageUrl" to profileImageUrl
         )
 
         firestore.collection("users")
@@ -149,5 +175,52 @@ class RegisterActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "RegisterActivity"
+        private const val PICK_IMAGE_REQUEST = 1
+    }
+
+    private fun openImagePicker() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        startActivityForResult(Intent.createChooser(intent, "Selecione uma imagem"), PICK_IMAGE_REQUEST)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            val selectedImageUri = data.data
+            if (selectedImageUri != null) {
+                if (profileImageUri != null) {
+                    binding.ivProfilePhoto.setImageURI(profileImageUri) // Exibe a imagem no ImageView
+                } else {
+                    showToast("Erro: A imagem não foi carregada corretamente.")
+                }
+
+            } else {
+                showToast("Erro: Nenhuma imagem foi selecionada.")
+            }
+        }
+    }
+    private fun uploadProfileImage(name: String, email: String, password: String) {
+        if (profileImageUri == null) {
+            showToast("Por favor, selecione uma imagem de perfil.")
+            return
+        }
+
+        val storageReference = FirebaseStorage.getInstance().reference
+        val fileRef = storageReference.child("profile_images/${System.currentTimeMillis()}.jpg")
+
+        profileImageUri?.let { uri ->
+            fileRef.putFile(uri)
+                .addOnSuccessListener {
+                    fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                        registerUser(name, email, password, downloadUri.toString())
+                    }
+                }
+                .addOnFailureListener { e ->
+                    hideProgress()
+                    showToast("Falha ao fazer upload da imagem: ${e.message}")
+                }
+        }
     }
 }
+
