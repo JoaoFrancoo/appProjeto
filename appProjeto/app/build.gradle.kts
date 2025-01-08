@@ -43,21 +43,22 @@ android {
 
 dependencies {
 
+    // Outras dependências
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation ("org.osmdroid:osmdroid-android:6.1.6")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.google.android.material:material:1.2.1")
-    implementation ("com.google.android.gms:play-services-auth:20.7.0")
-    implementation ("com.google.firebase:firebase-firestore:24.8.0")
-    implementation ("com.google.maps.android:android-maps-utils:2.2.2")
-    implementation ("com.google.android.gms:play-services-maps:17.0.1")
-    implementation ("com.google.android.gms:play-services-location:18.0.0")
+    implementation("org.osmdroid:osmdroid-android:6.1.6")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.android.material:material:1.2.1")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.firebase:firebase-firestore:24.8.0")
+    implementation("com.google.maps.android:android-maps-utils:2.2.2")
+    implementation("com.google.android.gms:play-services-maps:17.0.1")
+    implementation("com.google.android.gms:play-services-location:18.0.0")
     implementation(libs.volley)
     implementation(libs.play.services.location)
     implementation(libs.firebase.auth.ktx)
@@ -71,5 +72,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation ("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    // Dependência do Glide para carregar imagens
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
 }

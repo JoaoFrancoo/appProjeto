@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.appprojeto.R
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -18,10 +18,11 @@ import java.io.IOException
 
 class ProfileActivity : AppCompatActivity() {
 
+    // Outras variáveis
+    private lateinit var profileImage: ImageView
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
-    private lateinit var profileImage: ImageView
 
     private val PICK_IMAGE_REQUEST = 71
     private var imageUri: Uri? = null
@@ -56,8 +57,16 @@ class ProfileActivity : AppCompatActivity() {
                     val email = document.getString("email") ?: "Desconhecido"
                     val routesCount = document.getLong("routesCount")?.toInt() ?: 0
                     val ecopointsCount = document.getLong("ecopointsCount")?.toInt() ?: 0
+                    val profileImageUrl = document.getString("profileImage") // Recupera a URL da imagem
 
-                    // Configurando os dados do utilizador
+                    // Carregar imagem de perfil usando Glide
+                    Glide.with(this)
+                        .load(profileImageUrl)
+                        .placeholder(R.drawable.profile_foto) // Imagem de placeholder enquanto carrega
+                        .error(R.drawable.profile_foto) // Imagem de erro se falhar ao carregar
+                        .into(profileImage)
+
+                    // Configurar os dados do utilizador
                     userName.text = name
                     userEmail.text = email
                     userRoutes.text = "Rotas: $routesCount"
@@ -88,6 +97,7 @@ class ProfileActivity : AppCompatActivity() {
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
+    // Quando a imagem for selecionada, ela será enviada para o Firebase Storage
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
