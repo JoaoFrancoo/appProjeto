@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -18,11 +19,10 @@ import java.io.IOException
 
 class ProfileActivity : AppCompatActivity() {
 
-    // Outras variáveis
-    private lateinit var profileImage: ImageView
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private lateinit var profileImage: ImageView
 
     private val PICK_IMAGE_REQUEST = 71
     private var imageUri: Uri? = null
@@ -55,27 +55,60 @@ class ProfileActivity : AppCompatActivity() {
                 if (document != null && document.exists()) {
                     val name = document.getString("name") ?: "Desconhecido"
                     val email = document.getString("email") ?: "Desconhecido"
-                    val routesCount = document.getLong("routesCount")?.toInt() ?: 0
-                    val ecopointsCount = document.getLong("ecopointsCount")?.toInt() ?: 0
-                    val profileImageUrl = document.getString("profileImage") // Recupera a URL da imagem
+                    val profileImageUrl = document.getString("profileImageUrl")
 
-                    // Carregar imagem de perfil usando Glide
-                    Glide.with(this)
-                        .load(profileImageUrl)
-                        .placeholder(R.drawable.profile_foto) // Imagem de placeholder enquanto carrega
-                        .error(R.drawable.profile_foto) // Imagem de erro se falhar ao carregar
-                        .into(profileImage)
+                    // Log da URL da Imagem para Depuração
+                    Log.d("ProfileActivity", "Profile Image URL: $profileImageUrl")
 
-                    // Configurar os dados do utilizador
+                    // Configurando os dados do utilizador
                     userName.text = name
                     userEmail.text = email
-                    userRoutes.text = "Rotas: $routesCount"
-                    userEcopoints.text = "Ecopontos: $ecopointsCount"
+
+                    // Contar rotas do utilizador
+                    firestore.collection("routes")
+                        .whereEqualTo("uid", userId)
+                        .get()
+                        .addOnSuccessListener { routeDocuments ->
+                            val routesCount = routeDocuments.size()
+                            userRoutes.text = "Rotas: $routesCount"
+                        }
+                        .addOnFailureListener { e ->
+                            Log.d("ProfileActivity", "Error Fetching Routes: ${e.message}")
+                            Toast.makeText(this, "Falha ao buscar rotas: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+
+                    // Contar ecopontos do utilizador
+                    firestore.collection("ecopoints")
+                        .whereEqualTo("uid", userId)
+                        .get()
+                        .addOnSuccessListener { ecopointDocuments ->
+                            val ecopointsCount = ecopointDocuments.size()
+                            userEcopoints.text = "Ecopontos: $ecopointsCount"
+                        }
+                        .addOnFailureListener { e ->
+                            Log.d("ProfileActivity", "Error Fetching Ecopoints: ${e.message}")
+                            Toast.makeText(this, "Falha ao buscar ecopontos: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+
+                    // Carregar imagem de perfil
+                    if (!profileImageUrl.isNullOrEmpty()) {
+                        Log.d("ProfileActivity", "Loading Image with URL: $profileImageUrl")
+                        Glide.with(this)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.profile_foto)
+                            .into(profileImage)
+                    } else {
+                        Log.d("ProfileActivity", "Using Default Image")
+                        // Se não houver imagem de perfil, exibir a imagem pré-definida
+                        profileImage.setImageResource(R.drawable.profile_foto)
+                    }
                 } else {
+                    Log.d("ProfileActivity", "User Data Not Found")
                     Toast.makeText(this, "Dados do utilizador não encontrados", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
+                Log.d("ProfileActivity", "Error Fetching User Data: ${e.message}")
                 Toast.makeText(this, "Falha ao buscar dados do utilizador: ${e.message}", Toast.LENGTH_SHORT).show()
             }
 
@@ -97,7 +130,6 @@ class ProfileActivity : AppCompatActivity() {
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
-    // Quando a imagem for selecionada, ela será enviada para o Firebase Storage
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -136,7 +168,7 @@ class ProfileActivity : AppCompatActivity() {
         val userId = user?.uid ?: return
 
         firestore.collection("users").document(userId)
-            .update("profileImage", imageUrl)
+            .update("profileImageUrl", imageUrl)
             .addOnSuccessListener {
                 Toast.makeText(this, "Imagem de perfil atualizada!", Toast.LENGTH_SHORT).show()
             }
